@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Trend Radar — GitHub Trending 扫描日志</title>
+<title>Trend Radar · 2026-07-24</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
@@ -49,80 +49,47 @@ footer.site { margin-top: 56px; font-family: "IBM Plex Mono", monospace;
   font-size: 12px; color: var(--dim); }
 footer.site a { color: var(--dim); }
 
-.log { list-style: none; margin: 0; padding: 0; }
-.log li { border-bottom: 1px solid var(--line); }
-.log a { display: flex; align-items: baseline; gap: 14px; padding: 15px 6px;
-  text-decoration: none; transition: background .12s; }
-.log a:hover { background: var(--card); }
-.log a:hover .d::before { background: var(--blip); box-shadow: 0 0 0 4px rgba(23,122,91,.18); }
-.d { font-family: "IBM Plex Mono", monospace; font-weight: 500; white-space: nowrap; }
-.d::before { content: ""; display: inline-block; width: 7px; height: 7px;
-  border-radius: 50%; border: 1.5px solid var(--ink); margin-right: 12px;
-  vertical-align: 1px; transition: all .12s; }
-.leader { flex: 1; border-bottom: 1.5px dotted var(--line); transform: translateY(-4px); }
-.n { font-family: "IBM Plex Mono", monospace; font-size: 13px; color: var(--dim);
-  white-space: nowrap; }
+.back { font-family: "IBM Plex Mono", monospace; font-size: 13px;
+  text-decoration: none; color: var(--dim); }
+.back:hover { color: var(--ink); }
+header.site { margin-top: 18px; }
+.overview { border-left: 3px solid var(--ink); background: var(--card);
+  padding: 18px 22px; margin: 0 0 36px; }
+.overview .tag { font-family: "IBM Plex Mono", monospace; font-size: 11px;
+  letter-spacing: .18em; color: var(--dim); display: block; margin-bottom: 8px; }
+.card { background: var(--card); border: 1px solid var(--line); padding: 18px 22px;
+  margin-bottom: 14px; }
+.card .head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.card .name { font-family: "IBM Plex Mono", monospace; font-weight: 500;
+  font-size: 16px; text-decoration: none; }
+.card .name:hover { color: var(--blip); }
+.sig { display: inline-flex; gap: 3px; align-items: baseline; }
+.sig i { width: 5px; border-radius: 1px; background: var(--line); }
+.sig i.on { background: var(--blip); }
+.sig i:nth-child(1) { height: 6px; } .sig i:nth-child(2) { height: 9px; }
+.sig i:nth-child(3) { height: 12px; } .sig i:nth-child(4) { height: 15px; }
+.sig i:nth-child(5) { height: 18px; }
+.badge { font-family: "IBM Plex Mono", monospace; font-size: 11px;
+  letter-spacing: .1em; color: #fff; background: var(--surge);
+  padding: 2px 7px; border-radius: 2px; }
+.meta { font-family: "IBM Plex Mono", monospace; font-size: 12px;
+  color: var(--dim); margin: 6px 0 10px; }
+.card p { margin: 6px 0; }
+.card .why { color: var(--dim); font-size: 14px; }
 </style></head>
 <body><div class="wrap">
+<a class="back" href="index.html">&larr; SCAN LOG</a>
 <header class="site">
   <div class="dial" aria-hidden="true"></div>
   <div class="masthead">
-    <div class="eyebrow">github trending · ai digest</div>
-    <h1>Trend Radar</h1>
+    <div class="eyebrow">scan report · 0 signals</div>
+    <h1>2026-07-24</h1>
   </div>
 </header>
 <hr class="rule">
-<div class="sub"><span>SCAN LOG · 每周一 / 三 / 五</span><span>8 SCANS</span></div>
-<ul class="log">
+<div class="sub"><span>TREND RADAR</span><span>github trending · ai digest</span></div>
+<div class="overview"><span class="tag">OVERVIEW</span>今日无新上榜项目。</div>
 
-  <li><a href="2026-07-24.html">
-    <span class="d">2026-07-24</span>
-    <span class="leader" aria-hidden="true"></span>
-    <span class="n">view →</span>
-  </a></li>
 
-  <li><a href="2026-07-23.html">
-    <span class="d">2026-07-23</span>
-    <span class="leader" aria-hidden="true"></span>
-    <span class="n">25 signals</span>
-  </a></li>
-
-  <li><a href="2026-07-21.html">
-    <span class="d">2026-07-21</span>
-    <span class="leader" aria-hidden="true"></span>
-    <span class="n">25 signals</span>
-  </a></li>
-
-  <li><a href="2026-07-19.html">
-    <span class="d">2026-07-19</span>
-    <span class="leader" aria-hidden="true"></span>
-    <span class="n">25 signals</span>
-  </a></li>
-
-  <li><a href="2026-07-16.html">
-    <span class="d">2026-07-16</span>
-    <span class="leader" aria-hidden="true"></span>
-    <span class="n">25 signals</span>
-  </a></li>
-
-  <li><a href="2026-07-12.html">
-    <span class="d">2026-07-12</span>
-    <span class="leader" aria-hidden="true"></span>
-    <span class="n">25 signals</span>
-  </a></li>
-
-  <li><a href="2026-07-10.html">
-    <span class="d">2026-07-10</span>
-    <span class="leader" aria-hidden="true"></span>
-    <span class="n">view →</span>
-  </a></li>
-
-  <li><a href="2026-07-08.html">
-    <span class="d">2026-07-08</span>
-    <span class="leader" aria-hidden="true"></span>
-    <span class="n">view →</span>
-  </a></li>
-
-</ul>
-<footer class="site">tracked by <a href="https://github.com/DawnZYC/trend-radar">trend-radar</a> · 抓取 → 去重 → AI 分析,全自动</footer>
+<footer class="site">tracked by <a href="https://github.com/DawnZYC/trend-radar">trend-radar</a></footer>
 </div></body></html>
