@@ -47,7 +47,7 @@ def filter_new(repos: list[Repo], date: str, lookback_days: int = 14,
 def find_surges(repos: list[Repo], date: str, lookback_days: int = 7,
                 ratio: float = 1.5, db_path: Path = DB_PATH) -> list[Repo]:
     """在已上过榜的 repo 里,找当前 star 相比近 lookback_days 天内
-    最近一次记录暴涨 ≥ ratio 倍的,标记 is_surge 并返回。"""
+    最近一次记录暴涨 >= ratio 倍的,标记 is_surge 并返回。"""
     surges: list[Repo] = []
     with _connect(db_path) as conn:
         for repo in repos:
@@ -107,6 +107,21 @@ def unreported_new(date: str, lookback_days: int = 4, dedup_days: int = 14,
     return [Repo(full_name=name, url=f"https://github.com/{name}",
                  stars=stars, stars_today=stars_today)
             for name, stars, stars_today in rows]
+
+
+def filter_unreported(repos: list[Repo], date: str, dedup_days: int = 14,
+                      db_path: Path = DB_PATH) -> list[Repo]:
+    """返回近 dedup_days 天内未进过日报的 repo(查 reported 表)。
+
+    供主题推荐等非 Trending 来源做跨次去重;不写 sightings 表。
+    """
+    with _connect(db_path) as conn:
+        rows = conn.execute(
+            "SELECT full_name FROM reported WHERE date >= date(?, ?)",
+            (date, f"-{dedup_days} days"),
+        ).fetchall()
+    reported = {r[0] for r in rows}
+    return [r for r in repos if r.full_name not in reported]
 
 
 def mark_reported(full_names: list[str], date: str, db_path: Path = DB_PATH) -> None:
