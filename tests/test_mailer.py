@@ -24,3 +24,17 @@ def test_render_escapes_html_injection():
 def test_render_surge_badge():
     html = mailer.render("d", "o", [dict(ANALYSIS, is_surge=True)])
     assert "🚀" in html
+
+
+def test_render_topic_groups():
+    groups = [{"topic": "llm", "analyses": [dict(ANALYSIS, full_name="a/llm")]}]
+    html = mailer.render("2026-07-08", "综述", [ANALYSIS], topic_groups=groups)
+    assert "按主题推荐" in html
+    assert "llm" in html
+    assert "a/llm" in html
+
+
+def test_render_without_topic_groups_backward_compat():
+    html = mailer.render("2026-07-08", "综述", [ANALYSIS])
+    assert "按主题推荐" not in html
+    assert "a/b" in html

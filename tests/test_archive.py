@@ -50,3 +50,15 @@ def test_save_idempotent(tmp_path):
     assert "v2" in (tmp_path / "2026-07-08.html").read_text()
     index = (tmp_path / "index.html").read_text()
     assert "1 SCANS" in index and "2 signals" in index
+
+
+def test_save_with_topic_groups(tmp_path):
+    a = {"full_name": "a/b", "url": "https://github.com/a/b", "score": 3,
+         "category": "AI", "language": "Python", "stars_today": 5, "stars": 100,
+         "summary": "s", "problem_solved": "p", "reason": "r", "is_surge": False}
+    groups = [{"topic": "llm", "analyses": [dict(a, full_name="c/d")]}]
+    path = archive.save("2026-07-08", "综述", [a], topic_groups=groups, docs_dir=tmp_path)
+    html = path.read_text(encoding="utf-8")
+    assert "按主题推荐" in html
+    assert "llm" in html
+    assert "c/d" in html

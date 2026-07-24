@@ -28,18 +28,41 @@ TEMPLATE = Template(autoescape=True, source="""\
     <p style="margin:4px 0;color:#59636e;font-size:13px;line-height:1.6;">{{ a.problem_solved }} — {{ a.reason }}</p>
   </div>
   {% endfor %}
+
+  {% if topic_groups %}
+  <h2 style="font-size:16px;margin:24px 0 8px;">📦 按主题推荐</h2>
+  {% for g in topic_groups %}
+  <div style="color:#59636e;font-size:13px;margin:12px 0 4px;"># {{ g.topic }}</div>
+  {% for a in g.analyses %}
+  <div style="background:#fff;border:1px solid #d1d9e0;border-radius:8px;padding:16px 20px;margin-bottom:12px;">
+    <div style="display:flex;justify-content:space-between;">
+      <a href="{{ a.url }}" style="font-weight:600;color:#0969da;text-decoration:none;">{{ a.full_name }}</a>
+      <span>{{ "⭐" * a.score }}</span>
+    </div>
+    <div style="color:#59636e;font-size:13px;margin:4px 0;">
+      {{ a.category }}{% if a.language %} · {{ a.language }}{% endif %} · {{ a.stars }} stars
+    </div>
+    <p style="margin:8px 0 4px;line-height:1.6;">{{ a.summary }}</p>
+    <p style="margin:4px 0;color:#59636e;font-size:13px;line-height:1.6;">{{ a.problem_solved }} - {{ a.reason }}</p>
+  </div>
+  {% endfor %}
+  {% endfor %}
+  {% endif %}
+
   <p style="color:#8b949e;font-size:12px;">trend-radar · 自动生成</p>
 </div>
 </body></html>""")
 
 
-def render(date: str, overview: str, analyses: list[dict]) -> str:
-    return TEMPLATE.render(date=date, overview=overview, analyses=analyses)
+def render(date: str, overview: str, analyses: list[dict],
+           topic_groups: list[dict] | None = None) -> str:
+    return TEMPLATE.render(date=date, overview=overview,
+                           analyses=analyses, topic_groups=topic_groups or [])
 
 
 def send(subject: str, html: str) -> None:
     host = os.environ.get("SMTP_HOST", "smtp.gmail.com")
-    port = int(os.environ.get("SMTP_PORT", "587"))
+    port = int(os.environ.get("SMTP_PORT", "465"))
     user = os.environ["SMTP_USER"]
     password = os.environ["SMTP_PASS"]
     to_addr = os.environ.get("MAIL_TO", user)
@@ -49,7 +72,12 @@ def send(subject: str, html: str) -> None:
     msg["From"] = user
     msg["To"] = to_addr
 
-    with smtplib.SMTP(host, port, timeout=30) as server:
-        server.starttls()
-        server.login(user, password)
-        server.sendmail(user, [to_addr], msg.as_string())
+    if port == 465:
+        with smtplib.SMTP_SSL(host, port, timeout=30) as server:
+            server.login(user, password)
+            server.sendmail(user, [to_addr], msg.as_string())
+    else:
+        with smtplib.SMTP(host, port, timeout=30) as server:
+            server.starttls()
+            server.login(user, password)
+            server.sendmail(user, [to_addr], msg.as_string())

@@ -174,25 +174,49 @@ header.site { margin-top: 18px; }
   <p class="why">{{ a.problem_solved }} — {{ a.reason }}</p>
 </article>
 {% endfor %}
+{% if topic_groups %}
+<hr class="rule">
+<div class="sub"><span>按主题推荐</span><span>{{ topic_groups|length }} TOPICS</span></div>
+{% for g in topic_groups %}
+<div class="overview" style="margin-bottom:8px;"><span class="tag"># {{ g.topic }}</span></div>
+{% for a in g.analyses %}
+<article class="card">
+  <div class="head">
+    <a class="name" href="{{ a.url }}">{{ a.full_name }}</a>
+    <span class="sig" role="img" aria-label="关注度 {{ a.score }}/5">
+      {%- for i in range(5) %}<i class="{{ 'on' if i < a.score }}"></i>{% endfor -%}
+    </span>
+    {% if a.is_surge %}<span class="badge">SURGE</span>{% endif %}
+  </div>
+  <div class="meta">{{ a.category }}{% if a.language %} · {{ a.language }}{% endif %}
+    · {{ a.stars }} stars</div>
+  <p>{{ a.summary }}</p>
+  <p class="why">{{ a.problem_solved }} - {{ a.reason }}</p>
+</article>
+{% endfor %}
+{% endfor %}
+{% endif %}
 <footer class="site">tracked by <a href="{{ repo_url }}">trend-radar</a></footer>
 </div></body></html>
 """)
 
 
 def save(date: str, overview: str, analyses: list[dict],
+         topic_groups: list[dict] | None = None,
          docs_dir: Path = DOCS_DIR) -> Path:
     """渲染当日网页版日报、更新 manifest 与索引,返回日报路径。"""
     docs_dir.mkdir(parents=True, exist_ok=True)
     report = docs_dir / f"{date}.html"
     report.write_text(REPORT_TEMPLATE.render(
         date=date, overview=overview, analyses=analyses,
+        topic_groups=topic_groups or [],
         fonts=_FONTS, shell=_SHELL_CSS, repo_url=REPO_URL), encoding="utf-8")
 
     manifest_path = docs_dir / "manifest.json"
     manifest = {}
     if manifest_path.exists():
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    manifest[date] = {"count": len(analyses)}
+    manifest[date] = {"count": len(analyses) + sum(len(g["analyses"]) for g in (topic_groups or []))}
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=1),
                              encoding="utf-8")
 

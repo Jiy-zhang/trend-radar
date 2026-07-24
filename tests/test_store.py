@@ -35,3 +35,20 @@ def test_surge_outside_lookback_ignored(tmp_path):
     store.record([Repo("o/x", "u", stars=100)], "2026-06-01", db_path=db)
     x = Repo("o/x", "u", stars=10000)
     assert store.find_surges([x], "2026-07-08", lookback_days=7, db_path=db) == []
+
+
+def test_filter_unreported(tmp_path):
+    db = tmp_path / "t.db"
+    a = Repo("o/a", "u"); b = Repo("o/b", "u"); c = Repo("o/c", "u")
+    store.mark_reported(["o/a"], "2026-07-08", db_path=db)
+    fresh = store.filter_unreported([a, b, c], "2026-07-09", db_path=db)
+    assert [r.full_name for r in fresh] == ["o/b", "o/c"]
+
+
+def test_filter_unreported_respects_dedup_window(tmp_path):
+    db = tmp_path / "t.db"
+    a = Repo("o/a", "u")
+    store.mark_reported(["o/a"], "2026-07-01", db_path=db)
+    # 超过 14 天 dedup 窗口 -> 可重新推荐
+    fresh = store.filter_unreported([a], "2026-07-31", dedup_days=14, db_path=db)
+    assert [r.full_name for r in fresh] == ["o/a"]
