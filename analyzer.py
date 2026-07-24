@@ -8,7 +8,7 @@ from openai import OpenAI
 
 from scraper import Repo
 
-MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
+MODEL = os.environ.get("LLM_MODEL", "gpt-4o-mini")
 
 REPO_SCHEMA = {
     "name": "repo_analysis",
@@ -50,11 +50,32 @@ OVERVIEW_PROMPT = """你是技术日报主编。以下是今天 GitHub Trending 
 
 
 def _client() -> OpenAI:
-    return OpenAI()  # 读 OPENAI_API_KEY 环境变量
+    return OpenAI(
+        api_key=os.environ["LLM_API_KEY"],
+        base_url=os.environ.get("LLM_BASE_URL") or None,  # None -> SDK 默认(OpenAI)
+    )
+
+
+def _extract_json(text: str) -> dict:
+    """从模型输出提取 JSON: 去 markdown 围栏、截取首个 {...}、json.loads。"""
+    text = text.strip()
+    if text.startswith("```"):
+        text = text.split("```", 2)[1]
+        if text[:4].lower() == "json":
+            text = text[4:]
+        text = text.strip()
+    start, end = text.find("{"), text.rfind("}")
+    if start != -1 and end != -1 and end > start:
+        text = text[start:end + 1]
+    return json.loads(text)
 
 
 def analyze_repo(repo: Repo, client: OpenAI | None = None) -> dict | None:
-    """单 repo 结构化分析,失败返回 None。"""
+    """单 repo 结构化分析,失败返回 None。
+
+    先用 response_format=json_object(广泛兼容);provider 不支持或解析失败时,
+    去掉 response_format 纯 prompt 重试一次。
+    """
     client = client or _client()
     prompt = REPO_PROMPT.format(
         full_name=repo.full_name,
@@ -66,23 +87,29 @@ def analyze_repo(repo: Repo, client: OpenAI | None = None) -> dict | None:
         topics=", ".join(repo.topics) or "(无)",
         readme=repo.readme_excerpt or "(无)",
     )
-    try:
-        resp = client.chat.completions.create(
-            model=MODEL,
-            messages=[{"role": "user", "content": prompt}],
-            response_format={"type": "json_schema", "json_schema": REPO_SCHEMA},
-        )
-        result = json.loads(resp.choices[0].message.content)
-        result["full_name"] = repo.full_name
-        result["url"] = repo.url
-        result["language"] = repo.language
-        result["stars"] = repo.stars
-        result["stars_today"] = repo.stars_today
-        result["is_surge"] = repo.is_surge
-        return result
-    except Exception as exc:  # 单个失败不拖垮整批
-        print(f"[analyzer] {repo.full_name} failed: {exc}")
-        return None
+    prompt += ("\n\n请严格输出 JSON 对象,包含字段: summary(一句话中文总结), "
+               "category(分类), problem_solved(解决了什么问题), score(1-5 整数), "
+               "reason(评分理由)。仅输出 JSON,不要任何其他内容或 markdown 围栏。")
+    for use_rf in (True, False):
+        try:
+            kwargs = {"model": MODEL, "messages": [{"role": "user", "content": prompt}]}
+            if use_rf:
+                kwargs["response_format"] = {"type": "json_object"}
+            resp = client.chat.completions.create(**kwargs)
+            result = _extract_json(resp.choices[0].message.content)
+            result["full_name"] = repo.full_name
+            result["url"] = repo.url
+            result["language"] = repo.language
+            result["stars"] = repo.stars
+            result["stars_today"] = repo.stars_today
+            result["is_surge"] = repo.is_surge
+            return result
+        except Exception as exc:
+            if use_rf:
+                continue  # 降级: 去掉 response_format 重试
+            print(f"[analyzer] {repo.full_name} failed: {exc}")
+            return None
+    return None
 
 
 def write_overview(analyses: list[dict], client: OpenAI | None = None) -> str:
